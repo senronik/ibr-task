@@ -12,52 +12,51 @@ import ConfirmDeleteModal from "./ConfirmModal";
 import { GoUnfold } from "react-icons/go";
 import axios from "axios";
 import { EXPORT_CSV } from "../api/apiUrl";
+import exportFromJSON from 'export-from-json'
 const TableContent = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [paging, setPaging] = useState({});
-  const [showModal, setShowModal] = useState(false);
+  const [csvData,setCsvData]=useState([]);
+  console.log("csvdata",csvData);
+  const [showModal, setShowModal] = useState(null);
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
   const [priceRange, setPriceRange] = useState(0);
   const [sort, setSort] = useState(null);
   const [asc,setAsc]=useState(false)
+  const [isOpen,setOpen]=useState(false)
   const handlePriceRangeChange = (event) => {
     console.log("event price", event.target);
     setPriceRange(event.target.value);
   };
   const [query, setQuery] = useState(null);
-  const handleCancel = () => {
-    setShowModal(false);
-  };
-  console.log("paging", paging);
-  console.log("data", data);
+
   const [dialogState, setDialogState] = useState({
     isOpen: false,
     product: null,
   });
-
+  const handleCancel = () => {
+    setShowModal(false);
+  };
   const handleEditClick = (product) => {
     setDialogState({
       isOpen: true,
       product: product,
     });
   };
-
   const handleAddClick = () => {
     setDialogState({
       isOpen: true,
       product: null,
     });
   };
-
   const handleCloseDialog = () => {
     setDialogState({
       isOpen: false,
       product: null,
     });
   };
-  const [isOpen,setOpen]=useState(false)
   const handleCloseDialog1 = () => {
     setOpen(false)
   };
@@ -104,6 +103,17 @@ const TableContent = () => {
     } catch (error) {
       console.log(error);
     }
+  }
+  const handleExport = (e) =>{
+      const value = e.target.value;
+      const data = csvData;
+      if(value === 'all'){
+        handleEportCsv();
+      }else if(value === 'filtered'){
+          const fileName = "download";
+          const exportType =  exportFromJSON.types.csv
+          exportFromJSON({ data, fileName, exportType });
+      }
   }
   
   const downloadCSV = (csvData) => {
@@ -156,9 +166,11 @@ const TableContent = () => {
         `${GET_PRODUCT}?page=${page}&type=${type ? type : ""}${query ? `&query=${query}` : ""}&maxPrice=${maxPrice ? maxPrice : ""}&sort=${sort}&asc=${asc}`);
 
       if (response.status === 200) {
-        console.log("response", response.data);
+        console.log("response", response);
         setData(response.data.data);
         setPaging(response.data.paging);
+        setCsvData(response.data.filterData)
+       
       }
     } catch (error) {
       console.error(error);
@@ -229,12 +241,12 @@ const TableContent = () => {
                 </div>
               </form>
             </div>
-            <div class="grid grid-cols-4 gap-1">
-            <div className="...">
-              </div>
+            <div class="grid grid-cols-3 gap-1">
+            {/* <div className="...">
+              </div> */}
               <div className="...">
                 <label htmlFor="priceRange">Price Range:</label>{" "}
-                <span>{`₹ 0 - ₹ ${priceRange}`}</span>
+                <span>{`₹ 0 - ₹ ${priceRange}`}</span><br/>
                 <input
                   type="range"
                   id="priceRange"
@@ -248,14 +260,24 @@ const TableContent = () => {
                 />
               </div>
               <div className="...">
-              <button
+              {/* <button
                 type="button"
                 class="inline-flex items-center justify-center rounded-md border   px-4 py-2 text-sm font-medium text-base shadow-sm  focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                 // onClick={()=>navigate('/add-product')}
                 onClick={handleEportCsv}
               >
                 Export File
-              </button>
+              </button> */}
+               <select
+                  id="type"
+                  name="type"
+                  onChange={handleExport}
+                  class="block cursor-pointer border   pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="">Export File</option>
+                  <option value="all">All data</option>
+                  <option value="filtered">Filtered</option>
+                </select>
               </div>
               <div className="...">
               <button
@@ -386,14 +408,13 @@ const TableContent = () => {
                               <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <a
                                   class="text-indigo-600 hover:text-indigo-900 cursor-pointer	"
-                                  onClick={() => setShowModal(true)}
+                                  onClick={() => setShowModal(product)}
                                 >
                                   delete
                                 </a>
                                {showModal && <ConfirmDeleteModal
                                   isOpen={showModal}
                                   onCancel={handleCancel}
-                                  id={product._id}
                                   onConfirm={handleDelete}
                                 />}
                               </td>

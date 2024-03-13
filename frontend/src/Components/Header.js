@@ -1,14 +1,26 @@
-import React from "react";
+import React from 'react'
+
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import TableContent from "../Components/TableContent";
-import Header from "../Components/Header";
-const Home = () => {
-  const token = Cookies.get("token");
+import { useState } from "react";
+const Header = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const token = Cookies.get("token");
+
+    const toggleMenu = () => {
+      setIsOpen(!isOpen);
+    };
+  
+    const handleLogout = async () => {
+      localStorage.removeItem("user");
+      Cookies.remove("token");
+      window.location.reload();
+    };
+    const navigate = useNavigate();
 
   return (
-    <>
-      <header className="bg-indigo-600">
-        {/* <nav
+    <div>
+         <nav
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
           aria-label="Top"
         >
@@ -24,6 +36,12 @@ const Home = () => {
               </a>
               <div className="hidden ml-10 space-x-8 lg:block">
                 <p onClick={()=>navigate('/product-img')} className="text-base cursor-pointer font-medium text-white hover:text-indigo-50"> Product </p>
+
+                {/* <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Pricing </a>
+
+                <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Docs </a>
+
+                <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Company </a> */}
               </div>
             </div>
             <div className="ml-10 space-x-4">
@@ -76,6 +94,15 @@ const Home = () => {
                           >
                             Change Password
                           </a>
+                          {/* <form method="POST" action="#" role="none">
+                            <button
+                              type="submit"
+                              className="block w-full px-4 py-2 text-sm text-gray-700"
+                              role="menuitem"
+                            >
+                              Sign out
+                            </button>
+                          </form> */}
                         </div>
                       </div>
                     )}
@@ -99,14 +126,18 @@ const Home = () => {
               )}
             </div>
           </div>
-        </nav> */}
-        <Header/>
-      </header>
-      <main className="mt-5">
-      {token && <TableContent/>}
-      </main>
-    </>
-  );
-};
+          {/* <div className="py-4 flex flex-wrap justify-center space-x-6 lg:hidden">
+            <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Solutions </a>
 
-export default Home;
+            <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Pricing </a>
+
+            <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Docs </a>
+
+            <a href="#" className="text-base font-medium text-white hover:text-indigo-50"> Company </a>
+          </div> */}
+        </nav>
+    </div>
+  )
+}
+
+export default Header
