@@ -130,36 +130,7 @@ exports.getAllproducts = async (req, res) => {
         return asc === "true" ? a.price - b.price : b.price - a.price;
       });
     }
-    if(exportCsv){
-      try {
-        const products = await Product.find({});
-        if (!products) {
-          return res
-            .status(404)
-            .json({ success: false, message: "No data found to export" });
-        }
-        const csvWriter = createCsvWriter({
-          path: "products.csv",
-          header: [
-            { id: "name", title: "name" },
-            { id: "type", title: "type" },
-            { id: "description", title: "description" },
-            { id: "price", title: "price" },
-          ],
-        });
-        const records = products.map((product) => ({
-          name: product.name,
-          price: product.price,
-          description: product.description,
-          type: product.type,
-        }));
-        await csvWriter.writeRecords(records);
-        res.download("products.csv");
-      } catch (error) {
-        console.error("Error in exxporting csv", error);
-        res.status(500).send("Error exporting CSV data: " + error.message);
-      }
-    }
+    
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 5;
     const startIndex = (page - 1) * limit;
@@ -168,6 +139,7 @@ exports.getAllproducts = async (req, res) => {
 
     return res.status(200).json({
       data: paginatedProducts,
+      filterData:sortedProducts,
       paging: {
         totalPages: Math.ceil(allProducts.length / limit),
         currentPage: page,
