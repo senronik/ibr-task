@@ -10,5 +10,6 @@ router.delete('/delete-product/:id' ,crudController.deleteProduct);
 router.get('/products',crudController.getAllproducts);
 router.post('/import-csv',upload.single('file'),crudController.importCsv);
 router.get('/export-csv',crudController.exportCsv);
+router.post('/upload-image',upload.single('uploadImg'), crudController.Ck_editor);
 
 module.exports = router;

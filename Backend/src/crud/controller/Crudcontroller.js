@@ -214,3 +214,16 @@ exports.exportCsv = async (req, res) => {
     res.status(500).send("Error exporting CSV data: " + error.message);
   }
 };
+
+exports.Ck_editor = async (req,res)=>{
+  // console.log(req.file.filename);
+  // res.json({ url: req.file.filename });
+  const imageFile = req.file;
+  console.log(imageFile);
+  if (!imageFile) {
+      return res.status(400).send('No files were uploaded.');
+  }
+  
+  const imageUrl = '/upload/' + imageFile.filename;
+  res.status(200).json({ url: imageUrl });
+}

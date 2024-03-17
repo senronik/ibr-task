@@ -11,6 +11,7 @@ dbConfig.connect();
 app.use(express.json());
 app.use(cors()); 
 app.use(express.json()); 
+app.use('/upload', express.static('src/upload/'));
 
 app.use('/api/user', userRoutes);
 app.use('/api',crudRoutes);
