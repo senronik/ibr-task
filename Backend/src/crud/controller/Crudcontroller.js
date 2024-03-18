@@ -3,7 +3,8 @@ const csvParser = require("csv-parser");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-
+const Email = require("../models/Email");
+const sendEmail = require('../../Utils/sendEmail')
 exports.addProduct = async (req, res) => {
   try {
     const userId = req.userId;
@@ -59,7 +60,8 @@ exports.deleteProduct = async (req, res) => {
 };
 
 exports.getAllproducts = async (req, res) => {
-  let { page, limit, query, minPrice, maxPrice, type, sort, asc,exportCsv } = req.query;
+  let { page, limit, query, minPrice, maxPrice, type, sort, asc, exportCsv } =
+    req.query;
   try {
     let filter = {};
     if (!req.headers.role === "admin") {
@@ -73,14 +75,6 @@ exports.getAllproducts = async (req, res) => {
       if (minPrice) filter.price.$gte = parseFloat(minPrice);
       if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
-    //   if (query) {
-    //     if (Array.isArray(query)) {
-    //         filter.name = { $in: query.map(value => new RegExp(value, 'i')) };
-    //     }
-    //     else {
-    //         filter.name = { $regex: new RegExp(query, 'i') };
-    //     }
-    // }
     let response;
     if (Object.keys(filter).length >= 0) {
       let regex;
@@ -130,7 +124,11 @@ exports.getAllproducts = async (req, res) => {
         return asc === "true" ? a.price - b.price : b.price - a.price;
       });
     }
-    
+    let filterData = [];
+    sortedProducts.forEach((element) => {
+      const { name, type, description, price } = element;
+      filterData.push({ name, type, description, price });
+    });
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 5;
     const startIndex = (page - 1) * limit;
@@ -139,7 +137,7 @@ exports.getAllproducts = async (req, res) => {
 
     return res.status(200).json({
       data: paginatedProducts,
-      filterData:sortedProducts,
+      filterData: filterData,
       paging: {
         totalPages: Math.ceil(allProducts.length / limit),
         currentPage: page,
@@ -215,15 +213,62 @@ exports.exportCsv = async (req, res) => {
   }
 };
 
-exports.Ck_editor = async (req,res)=>{
-  // console.log(req.file.filename);
-  // res.json({ url: req.file.filename });
-  const imageFile = req.file;
-  console.log(imageFile);
-  if (!imageFile) {
-      return res.status(400).send('No files were uploaded.');
+exports.sendEmailtoUser = async (req, res) => {
+  const {email,subject,text}=req.body
+  console.log(text)
+  const fileBuffer = req.file;
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "User Not found" });
+    }
+    req.body["userId"] = userId;
+    if(fileBuffer){
+      const image = `${process.env.BASE_URL}/api/${req.file?.filename}`;
+      req.body['file'] = image;
+    }
+    const path =fileBuffer?.path;
+    const filename=fileBuffer?.filename;
+    // const message = `<p>${text},</p><br/>
+    // <p><img src="cid:warningImage" alt="Warning Image"></p>`;
+
+    const emailOptions = {
+        email: email,
+        subject: subject,
+        html: text,
+    }
+    await sendEmail(emailOptions)
+    
+    const data = new Email(req.body);
+    const response = await data.save();
+    return res.status(201).json({response,message:"send email"});
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-  
-  const imageUrl = '/upload/' + imageFile.filename;
-  res.status(200).json({ url: imageUrl });
+};
+
+
+exports.getAllEmails = async (req,res) =>{
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "User Not found" });
+    }
+    const data = await Email.find({}).sort({createdAt:-1});
+    return res.status(200).json(data)    
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({error:"Internal Server error"})
+  }
+}
+
+exports.CK_editor = async (req,res) =>{
+  try {
+    console.log(req.file.filename);
+    res.json({ url: req.file.filename });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json("Internal Server Error");
+  }
 }

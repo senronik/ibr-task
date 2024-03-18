@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const verifyAdmin= async (req,res,next) => {
-    const token = req.header('Authorization').replace('Bearer ', '')
+    const token = req.header('Authorization')?.replace('Bearer ', '')
     const jwtKey = process.env.SECRET_KEY;
     if(!token){
         return res.status(401).json({error:"Token not found"});

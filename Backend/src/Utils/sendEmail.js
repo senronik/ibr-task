@@ -7,6 +7,7 @@ const sendEmail = async (options) => {
             to: options.email,
             subject: options.subject,
             html: options.html,
+            attachments: options.attachments // Attachments array
         }
         const transporter = nodemailer.createTransport({
             host: process.env.SMPT_HOST,

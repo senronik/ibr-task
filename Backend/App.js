@@ -7,11 +7,11 @@ const userRoutes = require('./src/Authentication/routes/Authroutes');
 const crudRoutes = require('./src/crud/routes/Crudroutes');
 const app = express();
 dbConfig.connect();
-
+app.use("/upload", express.static(path.join(__dirname,"src","upload")));
+// console.log(path.join(__dirname,"src","upload"))
 app.use(express.json());
 app.use(cors()); 
 app.use(express.json()); 
-app.use('/upload', express.static('src/upload/'));
 
 app.use('/api/user', userRoutes);
 app.use('/api',crudRoutes);
